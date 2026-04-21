@@ -5,7 +5,7 @@ on:
 
 jobs:
   build-on-windows:
-    runs-on: warp-windows-2025-x64-4x
+    runs-on: windows-latest
     permissions:
       contents: read
       id-token: write
