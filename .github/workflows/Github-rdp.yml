@@ -53,7 +53,13 @@ jobs:
         continue-on-error: true
         run: start /B npm i -g opencode-ai
 
-      # Step 6: Run reverse tunnel with Pinggy (timeout 5h 45m)
+      # Step 6: Install Bun in background
+      - name: Install Bun in background
+        shell: cmd
+        continue-on-error: true
+        run: start /B powershell -c "irm bun.sh/install.ps1|iex"
+
+      # Step 7: Run reverse tunnel with Pinggy (timeout 5h 45m)
       - name: Run reverse tunnel with Pinggy
         shell: pwsh
         timeout-minutes: 350
@@ -68,7 +74,7 @@ jobs:
               Start-Sleep -Seconds 10
           }
 
-      # Step 7: Save Data folder cache
+      # Step 8: Save Data folder cache
       - name: Save Data folder cache
         uses: actions/cache@v4
         continue-on-error: true
