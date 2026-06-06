@@ -21,23 +21,33 @@ jobs:
           net user Administrator /active:yes
           net localgroup Administrators Administrator /add
 
-      # Install VS Code in background
-      - name: Install VS Code in background
-        shell: cmd
+      # Install VS Code
+      - name: Install VS Code
+        shell: pwsh
         continue-on-error: true
-        run: start /B winget install Microsoft.VisualStudioCode --silent
+        run: |
+          winget install Microsoft.VisualStudioCode --silent --accept-package-agreements
 
-      # Install opencode-ai in background
-      - name: Install opencode-ai in background
-        shell: cmd
+      # Install Node.js
+      - name: Install Node.js
+        shell: pwsh
         continue-on-error: true
-        run: start /B npm i -g opencode-ai
+        run: |
+          winget install OpenJS.NodeJS.LTS --silent --accept-package-agreements
 
-      # Install Bun in background
-      - name: Install Bun in background
-        shell: cmd
+      # Install opencode
+      - name: Install opencode
+        shell: pwsh
         continue-on-error: true
-        run: start /B powershell -c "irm bun.sh/install.ps1|iex"
+        run: |
+          npm install -g opencode
+
+      # Install Bun
+      - name: Install Bun
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          irm bun.sh/install.ps1 | iex
 
       # Step 2: Restore Data folder cache
       - name: Restore Data folder cache
