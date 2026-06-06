@@ -30,28 +30,6 @@ jobs:
           Invoke-WebRequest -Uri $url -OutFile $output
           Start-Process -FilePath $output -Args "/silent /mergetasks=!runcode" -Wait
 
-      # Install opencode-ai
-      - name: Install opencode-ai
-        shell: pwsh
-        continue-on-error: true
-        run: |
-          $runnerDir = "$env:USERPROFILE\AppData\Roaming\npm"
-          New-Item -ItemType Directory -Force -Path $runnerDir
-          npm config set prefix $runnerDir
-          npm install -g opencode-ai
-          $machinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
-          if ($machinePath -notlike "*$runnerDir*") {
-            [Environment]::SetEnvironmentVariable("Path", "$machinePath;$runnerDir", "Machine")
-          }
-
-      # Install Bun
-      - name: Install Bun
-        shell: pwsh
-        continue-on-error: true
-        run: |
-          $env:BUN_INSTALL = "$env:USERPROFILE\.bun"
-          irm bun.sh/install.ps1 | iex
-
       # Step 2: Restore Data folder cache
       - name: Restore Data folder cache
         uses: actions/cache@v4
@@ -71,6 +49,32 @@ jobs:
           $output = "$env:USERPROFILE\pinggy.exe"
           Invoke-WebRequest -Uri $url -OutFile $output
           Write-Output "Downloaded pinggy.exe to $output"
+
+      # Install opencode-ai in background
+      - name: Install opencode-ai
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          Start-Job -ScriptBlock {
+            $runnerDir = "$env:USERPROFILE\AppData\Roaming\npm"
+            New-Item -ItemType Directory -Force -Path $runnerDir
+            npm config set prefix $runnerDir
+            npm install -g opencode-ai
+            $machinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
+            if ($machinePath -notlike "*$runnerDir*") {
+              [Environment]::SetEnvironmentVariable("Path", "$machinePath;$runnerDir", "Machine")
+            }
+          }
+
+      # Install Bun in background
+      - name: Install Bun
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          Start-Job -ScriptBlock {
+            $env:BUN_INSTALL = "$env:USERPROFILE\.bun"
+            irm bun.sh/install.ps1 | iex
+          }
 
       # Step 4: Run reverse tunnel with Pinggy (timeout 5h 45m)
       - name: Run reverse tunnel with Pinggy
