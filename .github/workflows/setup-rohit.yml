@@ -57,30 +57,34 @@ jobs:
           }
 
           Write-Output "`n=== opencode-ai ==="
-          $npmDir = "C:\Users\Rohit\AppData\Roaming\npm"
-          $opencodeCandidates = @(
-            "$npmDir\opencode.cmd",
-            "$npmDir\opencode-ai.cmd",
-            "$npmDir\node_modules\.bin\opencode.cmd",
-            "$npmDir\node_modules\.bin\opencode-ai.cmd"
+          $dirsToCheck = @(
+            "C:\Users\Rohit\AppData\Roaming\npm",
+            "C:\Users\runneradmin\AppData\Roaming\npm"
           )
           $found = $false
-          foreach ($path in $opencodeCandidates) {
-            if (Test-Path $path) {
-              Write-Output "Found: $path"
-              & $path --version
+          foreach ($dir in $dirsToCheck) {
+            if (Test-Path "$dir\opencode.cmd") {
+              Write-Output "Found: $dir\opencode.cmd"
+              & "$dir\opencode.cmd" --version
+              $found = $true
+              break
+            }
+            if (Test-Path "$dir\opencode-ai.cmd") {
+              Write-Output "Found: $dir\opencode-ai.cmd"
+              $found = $true
+              break
+            }
+            if (Test-Path "$dir\node_modules\.bin\opencode.cmd") {
+              Write-Output "Found: $dir\node_modules\.bin\opencode.cmd"
               $found = $true
               break
             }
           }
           if (-not $found) {
-            Write-Output "opencode-ai not found at expected paths"
-            Write-Output "--- $npmDir contents ---"
-            if (Test-Path $npmDir) {
-              Get-ChildItem $npmDir -Recurse -Depth 2 -Name
-            } else {
-              Write-Output "Directory does not exist"
-            }
+            Write-Output "opencode-ai NOT found. Searching..."
+            Get-ChildItem C:\Users -Recurse -Depth 4 -Filter "opencode*" -Name -ErrorAction SilentlyContinue
+            Write-Output "--- npm global list ---"
+            npm ls -g --depth=0
           }
 
           Write-Output "`n=== PATH verification ==="
