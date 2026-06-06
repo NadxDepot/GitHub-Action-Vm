@@ -106,7 +106,7 @@ jobs:
                   -o StrictHostKeyChecking=no `
                   -o ServerAliveInterval=30 `
                   -o ServerAliveCountMax=3 `
-                  0WQ85RZeimH@free.pinggy.io
+                  0WQ85RZeimH+tcp@free.pinggy.io
               Start-Sleep -Seconds 10
           }
 
