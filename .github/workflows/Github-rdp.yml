@@ -30,6 +30,16 @@ jobs:
           Invoke-WebRequest -Uri $url -OutFile $output
           Start-Process -FilePath $output -Args "/silent /mergetasks=!runcode" -Wait
 
+      # Install JDK 26
+      - name: Install JDK 26
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          $url = "https://download.oracle.com/java/26/latest/jdk-26_windows-x64_bin.msi"
+          $output = "$env:TEMP\jdk-26.msi"
+          Invoke-WebRequest -Uri $url -OutFile $output
+          Start-Process -FilePath msiexec.exe -Args "/i $output /qn" -Wait
+
       # Step 2: Restore Data folder cache
       - name: Restore Data folder cache
         uses: actions/cache@v4
