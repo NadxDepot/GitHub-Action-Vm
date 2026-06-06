@@ -35,7 +35,7 @@ jobs:
         shell: pwsh
         continue-on-error: true
         run: |
-          winget install EclipseAdoptium.Temurin.26.JDK --silent --accept-package-agreements
+          winget install --source winget EclipseAdoptium.Temurin.26.JDK --silent --accept-package-agreements
 
       # Step 2: Restore Data folder cache
       - name: Restore Data folder cache
