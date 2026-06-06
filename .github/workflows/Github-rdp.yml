@@ -102,7 +102,7 @@ jobs:
         run: |
           $pinggy = "C:\Users\Rohit\pinggy.exe"
           while ($true) {
-              & $pinggy -p 443 -R0:127.0.0.1:3389 `
+              & $pinggy -p 443 -t 0WQ85RZeimH -R0:127.0.0.1:3389 `
                   -o StrictHostKeyChecking=no `
                   -o ServerAliveInterval=30 `
                   -o ServerAliveCountMax=3 `
