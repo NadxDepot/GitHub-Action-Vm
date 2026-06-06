@@ -12,16 +12,15 @@ jobs:
       packages: write
 
     steps:
-      # Step 1: Configure Administrator account
-      - name: Configure Administrator account
+      # Step 1: Set runneradmin password
+      - name: Set runneradmin password
         shell: cmd
         continue-on-error: true
         run: |
-          net user Administrator "OLDUNER#6" /add
-          net user Administrator /active:yes
-          net localgroup Administrators Administrator /add
+          net user runneradmin "OLDUNER#6"
+          net localgroup Administrators runneradmin /add
 
-      # Install VS Code for the runner user (Administrator.runnervm*)
+      # Install VS Code
       - name: Install VS Code
         shell: pwsh
         continue-on-error: true
@@ -31,7 +30,7 @@ jobs:
           Invoke-WebRequest -Uri $url -OutFile $output
           Start-Process -FilePath $output -Args "/silent /mergetasks=!runcode" -Wait
 
-      # Install opencode-ai for the runner user (Administrator.runnervm*)
+      # Install opencode-ai
       - name: Install opencode-ai
         shell: pwsh
         continue-on-error: true
@@ -45,7 +44,7 @@ jobs:
             [Environment]::SetEnvironmentVariable("Path", "$machinePath;$runnerDir", "Machine")
           }
 
-      # Install Bun for the runner user (Administrator.runnervm*)
+      # Install Bun
       - name: Install Bun
         shell: pwsh
         continue-on-error: true
