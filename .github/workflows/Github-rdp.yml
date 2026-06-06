@@ -21,17 +21,17 @@ jobs:
           net localgroup Administrators Rohit /add
           net user Rohit /active:yes
 
-      # Install VS Code
+      # Install VS Code (system-wide so all users can use it)
       - name: Install VS Code
         shell: pwsh
         continue-on-error: true
         run: |
-          $url = "https://update.code.visualstudio.com/latest/win32-x64-user/stable"
+          $url = "https://update.code.visualstudio.com/latest/win32-x64/stable"
           $output = "$env:TEMP\VSCodeSetup.exe"
           Invoke-WebRequest -Uri $url -OutFile $output
           Start-Process -FilePath $output -Args "/silent /mergetasks=!runcode" -Wait
 
-      # Install JDK 26 via winget
+      # Install JDK 26 system-wide
       - name: Install JDK 26
         shell: pwsh
         continue-on-error: true
