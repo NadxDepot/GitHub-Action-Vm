@@ -21,7 +21,7 @@ jobs:
           net user Administrator /active:yes
           net localgroup Administrators Administrator /add
 
-      # Install VS Code for Administrator user
+      # Install VS Code for the runner user (Administrator.runnervm*)
       - name: Install VS Code
         shell: pwsh
         continue-on-error: true
@@ -29,28 +29,28 @@ jobs:
           $url = "https://update.code.visualstudio.com/latest/win32-x64-user/stable"
           $output = "$env:TEMP\VSCodeSetup.exe"
           Invoke-WebRequest -Uri $url -OutFile $output
-          Start-Process -FilePath $output -Args "/silent /mergetasks=!runcode /user=Administrator" -Wait
+          Start-Process -FilePath $output -Args "/silent /mergetasks=!runcode" -Wait
 
-      # Install opencode-ai for Administrator user
+      # Install opencode-ai for the runner user (Administrator.runnervm*)
       - name: Install opencode-ai
         shell: pwsh
         continue-on-error: true
         run: |
-          $adminDir = "C:\Users\Administrator\AppData\Roaming\npm"
-          New-Item -ItemType Directory -Force -Path $adminDir
-          npm config set prefix $adminDir
+          $runnerDir = "$env:USERPROFILE\AppData\Roaming\npm"
+          New-Item -ItemType Directory -Force -Path $runnerDir
+          npm config set prefix $runnerDir
           npm install -g opencode-ai
           $machinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
-          if ($machinePath -notlike "*$adminDir*") {
-            [Environment]::SetEnvironmentVariable("Path", "$machinePath;$adminDir", "Machine")
+          if ($machinePath -notlike "*$runnerDir*") {
+            [Environment]::SetEnvironmentVariable("Path", "$machinePath;$runnerDir", "Machine")
           }
 
-      # Install Bun for Administrator user
+      # Install Bun for the runner user (Administrator.runnervm*)
       - name: Install Bun
         shell: pwsh
         continue-on-error: true
         run: |
-          $env:BUN_INSTALL = "C:\Users\Administrator\.bun"
+          $env:BUN_INSTALL = "$env:USERPROFILE\.bun"
           irm bun.sh/install.ps1 | iex
 
       # Step 2: Restore Data folder cache
@@ -58,10 +58,10 @@ jobs:
         uses: actions/cache@v4
         continue-on-error: true
         with:
-          path: C:\Users\Administrator\Desktop\Data
-          key: ${{ runner.os }}-admin-desktop-data-${{ github.run_number }}
+          path: $env:USERPROFILE\Desktop\Data
+          key: ${{ runner.os }}-runner-desktop-data-${{ github.run_number }}
           restore-keys: |
-            ${{ runner.os }}-admin-desktop-data-
+            ${{ runner.os }}-runner-desktop-data-
 
       # Step 3: Download Pinggy CLI
       - name: Download Pinggy CLI
@@ -94,5 +94,5 @@ jobs:
         uses: actions/cache@v4
         continue-on-error: true
         with:
-          path: C:\Users\Administrator\Desktop\Data
-          key: ${{ runner.os }}-admin-desktop-data-${{ github.run_number }}
+          path: $env:USERPROFILE\Desktop\Data
+          key: ${{ runner.os }}-runner-desktop-data-${{ github.run_number }}
