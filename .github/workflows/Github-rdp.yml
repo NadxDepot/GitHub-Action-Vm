@@ -45,11 +45,12 @@ jobs:
             [Environment]::SetEnvironmentVariable("Path", "$machinePath;$adminDir", "Machine")
           }
 
-      # Install Bun
+      # Install Bun for Administrator user
       - name: Install Bun
         shell: pwsh
         continue-on-error: true
         run: |
+          $env:BUN_INSTALL = "C:\Users\Administrator\.bun"
           irm bun.sh/install.ps1 | iex
 
       # Step 2: Restore Data folder cache
@@ -83,7 +84,8 @@ jobs:
               & $pinggy -p 443 -R0:127.0.0.1:3389 `
                   -o StrictHostKeyChecking=no `
                   -o ServerAliveInterval=30 `
-                  0WQ85RZeimH+force+tcp@free.pinggy.io
+                  -o ServerAliveCountMax=3 `
+                  force+tcp@free.pinggy.io
               Start-Sleep -Seconds 10
           }
 
