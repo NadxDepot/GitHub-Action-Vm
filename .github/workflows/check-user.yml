@@ -1,0 +1,19 @@
+name: Check Runner User
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: windows-latest
+    steps:
+      - name: Check user info
+        shell: pwsh
+        run: |
+          Write-Output "USERPROFILE: $env:USERPROFILE"
+          Write-Output "USERNAME: $env:USERNAME"
+          Write-Output "USERDOMAIN: $env:USERDOMAIN"
+          Write-Output "COMPUTERNAME: $env:COMPUTERNAME"
+          Write-Output ""
+          Write-Output "Profiles:"
+          Get-ChildItem C:\Users | Select-Object Name
