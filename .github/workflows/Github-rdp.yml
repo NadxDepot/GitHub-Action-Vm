@@ -58,40 +58,31 @@ jobs:
           Invoke-WebRequest -Uri $url -OutFile $output
           Write-Output "Downloaded pinggy.exe to $output"
 
-      # Install opencode-ai in background
+      # Install opencode-ai (synchronous, available for all users)
       - name: Install opencode-ai
         shell: pwsh
         continue-on-error: true
         run: |
-          Start-Job -ScriptBlock {
-            $rohitDir = "C:\Users\Rohit\AppData\Roaming\npm"
-            New-Item -ItemType Directory -Force -Path $rohitDir
-            npm config set prefix $rohitDir
-            npm install -g opencode-ai
-            $machinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
-            $rohitDirs = @("C:\Users\Rohit\.bun\bin", $rohitDir)
-            foreach ($dir in $rohitDirs) {
-              if ($machinePath -notlike "*$dir*") {
-                $machinePath = "$machinePath;$dir"
-                [Environment]::SetEnvironmentVariable("Path", $machinePath, "Machine")
-              }
-            }
+          $rohitDir = "C:\Users\Rohit\AppData\Roaming\npm"
+          New-Item -ItemType Directory -Force -Path $rohitDir
+          npm config set prefix $rohitDir
+          npm install -g opencode-ai
+          $machinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
+          if ($machinePath -notlike "*$rohitDir*") {
+            [Environment]::SetEnvironmentVariable("Path", "$machinePath;$rohitDir", "Machine")
           }
 
-      # Install Bun in background
+      # Install Bun (synchronous, available for all users)
       - name: Install Bun
         shell: pwsh
         continue-on-error: true
         run: |
-          Start-Job -ScriptBlock {
-            $env:BUN_INSTALL = "C:\Users\Rohit\.bun"
-            irm bun.sh/install.ps1 | iex
-            $machinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
-            $bunDir = "C:\Users\Rohit\.bun\bin"
-            if ($machinePath -notlike "*$bunDir*") {
-              $machinePath = "$machinePath;$bunDir"
-              [Environment]::SetEnvironmentVariable("Path", $machinePath, "Machine")
-            }
+          $env:BUN_INSTALL = "C:\Users\Rohit\.bun"
+          irm bun.sh/install.ps1 | iex
+          $bunDir = "C:\Users\Rohit\.bun\bin"
+          $machinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
+          if ($machinePath -notlike "*$bunDir*") {
+            [Environment]::SetEnvironmentVariable("Path", "$machinePath;$bunDir", "Machine")
           }
 
       # Step 4: Run reverse tunnel with Pinggy (timeout 5h 45m)
