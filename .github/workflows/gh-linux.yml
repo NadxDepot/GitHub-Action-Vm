@@ -14,11 +14,11 @@ jobs:
         run: |
           sudo apt-get update
 
-      - name: Install SSH, tmux and dependencies
+      - name: Install SSH, autossh, tmux and dependencies
         if: always()
         continue-on-error: true
         run: |
-          sudo apt-get install -y openssh-server sshpass tmux
+          sudo apt-get install -y openssh-server sshpass tmux autossh
 
       - name: Set root password
         if: always()
@@ -26,12 +26,15 @@ jobs:
         run: |
           echo "root:root" | sudo chpasswd
 
-      - name: Allow root login via SSH
+      - name: Configure SSH for interactive sessions
         if: always()
         continue-on-error: true
         run: |
           sudo sed -i.bak -E 's/^#?PermitRootLogin\s+.*/PermitRootLogin yes/' /etc/ssh/sshd_config
-          sudo service ssh restart || true
+          sudo sed -i 's/^#PermitTTY yes/PermitTTY yes/' /etc/ssh/sshd_config
+          sudo sed -i 's/^#PrintMotd yes/PrintMotd no/' /etc/ssh/sshd_config
+          echo "ForceCommand /bin/bash -l" | sudo tee -a /etc/ssh/sshd_config
+          sudo systemctl restart ssh || sudo service ssh restart || true
 
       - name: Start SSH service
         if: always()
@@ -61,25 +64,38 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-data-
 
-      - name: Setup Serveo tunnel with tmux
+      - name: Setup Serveo tunnel with autossh (persistent)
         if: always()
         continue-on-error: true
         run: |
-          tmux new-session -d -s tunnel "sshpass -p 'root' ssh -o StrictHostKeyChecking=no -R my-github-runner:22:localhost:22 root@serveo.net"
+          autossh -M 0 -f -N \
+            -o "ServerAliveInterval=60" \
+            -o "ServerAliveCountMax=3" \
+            -o "StrictHostKeyChecking=no" \
+            -o "UserKnownHostsFile=/dev/null" \
+            -o "ExitOnForwardFailure=yes" \
+            -R my-github-runner:22:localhost:22 \
+            root@serveo.net \
+            2>&1
+          
+          echo "Tunnel established with autossh"
 
       - name: Keep workflow alive
         if: always()
         continue-on-error: true
         timeout-minutes: 350
         run: |
-          yes > /dev/null &
-          tail -f /dev/null &
-          cat /dev/urandom > /dev/null &
-          while :; do
-            date > /dev/null
+          while true; do
+            if ! pgrep -f "autossh.*serveo" > /dev/null; then
+              autossh -M 0 -f -N \
+                -o "ServerAliveInterval=60" \
+                -o "StrictHostKeyChecking=no" \
+                -o "UserKnownHostsFile=/dev/null" \
+                -R my-github-runner:22:localhost:22 \
+                root@serveo.net 2>&1
+            fi
             sleep 60
-          done &
-          wait
+          done
 
       - name: Save /root/data cache
         if: always()
