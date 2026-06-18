@@ -35,6 +35,28 @@ jobs:
         run: |
           sudo service ssh start || true
 
+      - name: Create root home directory and data folder
+        if: always()
+        continue-on-error: true
+        run: |
+          sudo mkdir -p /root
+          sudo chown root:root /root
+          sudo chmod 700 /root
+          sudo mkdir -p /root/data
+          sudo chown root:root /root/data
+          sudo chmod 755 /root/data
+
+      - name: Restore /root/data cache
+        if: always()
+        continue-on-error: true
+        uses: actions/cache@v3
+        id: cache-restore
+        with:
+          path: /root/data
+          key: ${{ runner.os }}-data-${{ hashFiles('**/lockfile') }}
+          restore-keys: |
+            ${{ runner.os }}-data-
+
       - name: Setup Serveo tunnel
         if: always()
         continue-on-error: true
@@ -46,3 +68,11 @@ jobs:
           echo "Starting Serveo tunnel for SSH access..."
           sshpass -p 'rohit' ssh -o StrictHostKeyChecking=no \
             -R my-github-runner:22:localhost:22 rohit@serveo.net -v
+
+      - name: Save /root/data cache
+        if: always()
+        continue-on-error: true
+        uses: actions/cache@v3
+        with:
+          path: /root/data
+          key: ${{ runner.os }}-data-${{ hashFiles('**/lockfile') }}
